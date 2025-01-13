@@ -9,6 +9,7 @@ do
 	l) backupLidarr=true;;
 	p) backupProwlarr=true;;
 	b) backupBazarr=true;;
+        n) backupNotifiarr=true;;
     esac
 done
 
@@ -41,7 +42,12 @@ fi
 
 if [[ $backupAll = true || $backupBazarr = true ]]; then
   echo  $(date +"%Y-%m-%d %H:%M:%S") setting bazarr backup folder to ${listOfDirs[bazarr]}
-  listOfDirs[bazarr]=/opt/bazarr/config/backup
+  listOfDirs[bazarr]=/opt/docker/.config/bazarr/config/backup
+fi
+
+if [[ $backupAll = true || $backupNotifiarr = true ]]; then
+  echo  $(date +"%Y-%m-%d %H:%M:%S") setting notifiarr backup folder to ${listOfDirs[notifiarr]}
+  listOfDirs[notifiarr]=/opt/docker/.config/notifiarr/config/backup
 fi
 
 for dir in "${!listOfDirs[@]}"
