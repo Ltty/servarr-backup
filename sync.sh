@@ -10,6 +10,7 @@ do
 	p) backupProwlarr=true;;
 	b) backupBazarr=true;;
         n) backupNotifiarr=true;;
+	c) backupCron=true;;
     esac
 done
 
@@ -47,7 +48,14 @@ fi
 
 if [[ $backupAll = true || $backupNotifiarr = true ]]; then
   echo  $(date +"%Y-%m-%d %H:%M:%S") setting notifiarr backup folder to ${listOfDirs[notifiarr]}
-  listOfDirs[notifiarr]=/opt/docker/.config/notifiarr/config/backup
+  listOfDirs[notifiarr]=/opt/docker/.config/notifiarr/backups
+fi
+
+if [[ $backupAll = true || $backupCron = true ]]; then
+  echo  $(date +"%Y-%m-%d %H:%M:%S") setting cron backup folder to ${listOfDirs[cron]}
+  listOfDirs[cron]=/bkup/cron
+  mkdir -p ${listOfDirs[cron]}
+  crontab -l > ${listOfDirs[cron]}/crontab.backup
 fi
 
 for dir in "${!listOfDirs[@]}"
@@ -57,4 +65,8 @@ do
    rclone $rcloneOptions --config=$rcloneConfig sync ${listOfDirs[$dir]} openhab:/servarr/$dir
 done
 
+echo  $(date +"%Y-%m-%d %H:%M:%S") cleaning up space
+rm -R /bkup/*
+
 echo  $(date +"%Y-%m-%d %H:%M:%S") backup completed
+
