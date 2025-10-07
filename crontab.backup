@@ -1,0 +1,44 @@
+# Edit this file to introduce tasks to be run by cron.
+# 
+# Each task to run has to be defined through a single line
+# indicating with different fields when the task will be run
+# and what command to run for the task
+# 
+# To define the time you can provide concrete values for
+# minute (m), hour (h), day of month (dom), month (mon),
+# and day of week (dow) or use '*' in these fields (for 'any').
+# 
+# Notice that tasks will be started based on the cron's system
+# daemon's notion of time and timezones.
+# 
+# Output of the crontab jobs (including errors) is sent through
+# email to the user the crontab file belongs to (unless redirected).
+# 
+# For example, you can run a backup of all your user accounts
+# at 5 a.m every week with:
+# 0 5 * * 1 tar -zcf /var/backups/home.tgz /home/
+# 
+# For more information see the manual pages of crontab(5) and cron(8)
+# 
+# m h  dom mon dow   command
+
+# upload downloaded media files
+#0 0 * * * /usr/bin/flock -w 0 /opt/rclone/cron-movies.lock /usr/bin/rclone move '/mnt/gdrive-local/Movies' 'idrivee2-crypt:/Movies' --config /home/florian/.config/rclone/rclone.conf --log-file /opt/rclone/logs/upload.log --log-level INFO --include=/** --delete-empty-src-dirs --fast-list --min-age 6h
+0 0 * * * /usr/bin/flock -w 0 /opt/rclone/cron-movies.lock /usr/bin/rclone rc -vv --log-file='/opt/rclone/logs/rclone-upload.log' sync/move srcFs='/mnt/local/Movies' dstFs='idrivee2-crypt:/Movies' deleteEmptySrcDirs=true _filter='{ "MinAge":21600000000, "IncludeRule":["/**"] }' _async=true --rc-user admin --rc-pass flh34790
+#0 0 * * * /usr/bin/flock -w 0 /opt/rclone/cron-tvshows.lock /usr/bin/rclone move '/mnt/gdrive-local/TV Shows' 'idrivee2-crypt:/TV Shows' --config /home/florian/.config/rclone/rclone.conf --log-file /opt/rclone/logs/upload.log --log-level INFO --include=/** --delete-empty-src-dirs --fast-list --min-age 6h
+0 0 * * * /usr/bin/flock -w 0 /opt/rclone/cron-tvshows.lock /usr/bin/rclone rc -vv --log-file='/opt/rclone/logs/rclone-upload.log' sync/move srcFs='/mnt/local/TV Shows' dstFs='idrivee2-crypt:/TV Shows' deleteEmptySrcDirs=true _filter='{ "MinAge":21600000000, "IncludeRule":["/**"] }' _async=true --rc-user admin --rc-pass flh34790
+#0 0 * * * /usr/bin/flock -w 0 /opt/rclone/cron-music.lock /usr/bin/rclone move '/mnt/local/Music' 'idrivee2-crypt:/Music' --config /home/florian/.config/rclone/rclone.conf --log-file /opt/rclone/logs/upload.log --log-level INFO --include=/** --delete-empty-src-dirs --fast-list --min-age 6h
+0 0 * * * /usr/bin/flock -w 0 /opt/rclone/cron-music.lock /usr/bin/rclone rc -vv --log-file='/opt/rclone/logs/rclone-upload.log' sync/move srcFs='/mnt/local/Music' dstFs='idrivee2-crypt:/Music' deleteEmptySrcDirs=true _filter='{ "MinAge":21600000000, "IncludeRule":["/**"] }' _async=true --rc-user admin --rc-pass flh34790
+
+# write rclone statistics to file
+* * * * * /usr/bin/rclone rc --user admin --pass flh34790 core/stats | (jq -c ; echo "" ) >> /var/log/rclone_stats.log
+0 * * * * /usr/bin/rclone rc --user admin --pass flh34790 core/transferred | (jq -c ; echo "" ) >> /var/log/rclone_history.log
+
+# backup servarr setup
+0 0 * * * /opt/servarr-backup/sync.sh -a >> /var/log/servarr-backup.log  2>&1
+
+# restart servarr to reduce memory saturation
+0 0 * * * systemctl restart prowlarr.service
+0 0 * * * systemctl restart radarr.service
+0 0 * * * systemctl restart sonarr.service
+0 0 * * * systemctl restart lidarr.service
